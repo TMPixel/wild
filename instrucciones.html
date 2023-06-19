@@ -1,0 +1,17 @@
+Pasos a realizar:
+  1.) Montar XAMMP para tener MySQL y acceder con PHPMyAdmin.
+  2.) Descargar la última versión de WildFly.
+  3.) Enlazar Netbeans con WildFly y arrancar WildFly.
+  4.) Acceder a la consola de Administración de WildFly.
+  5.) Cambiar la contraseña del usuario admin, usando [DirectorioWildFly]/bin/add-user.bat
+  6.) Acceder a la consola de Administración de WildFly, y comprobar que ahora sí se puede entrar. 
+  7.) Descargar mysql-connector-java-5.1.38.jar, y colocarlo en [DirectorioWildFly]/bin/
+  8.) Desde la línea de comandos ejecutar [DirectorioWildFly]/bin/jboss-cli.bat, y luego:
+ * connect
+ * module add --name=com.mysql.jdbc --resources=mysql-connector-java-5.1.38.jar --dependencies=javax.api,javax.transaction.api
+ * /subsystem=datasources/jdbc-driver=mysql:add(driver-name="mysql",driver-module-name="com.mysql.jdbc",driver-class-name=com.mysql.jdbc.Driver)
+ * data-source add --name=MiSuperDS --driver-name=mysql --connection-url=jdbc:mysql://localhost:3306/alumnado --jndi-name=java:jboss/jdbc/MiSuperDS --user-name=root --password=
+ * data-source enable --name=MiSuperDS
+  9.) Crear un proyecto web con Maven en Netbeans.
+ 10.) Añadir un Servicio "RESTFul from Database" al proyecto.
+ 11.) Probar el Servicio con el plugin RESTClient para Firefox.
