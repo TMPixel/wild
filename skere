@@ -1,0 +1,147 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+public class Sistema extends javax.swing.JFrame {
+    
+    DefaultTableModel modelo;
+    
+    public Sistema() {
+        initComponents();
+        mostrarDatos();
+        cargarTextos();
+    }
+    
+    public void mostrarDatos(){
+        String []titulos = {"CEDULA","NOMBRE","APELLIDO","EDAD"};
+        modelo = new DefaultTableModel(null, titulos);
+        
+        try{
+            URL url = new URL("http://empresa.com:8080/sistema/Controller/rest.php");    
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestMethod("GET");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder respuesta = new StringBuilder();
+            String linea;
+            while((linea=reader.readLine()) != null){
+                respuesta.append(linea);
+            }
+            //System.out.println(respuesta.toString());
+            
+            JSONParser parse = new JSONParser();
+            JSONArray jsonArray = (JSONArray)parse.parse(respuesta.toString());
+            
+            for(Object object:jsonArray){
+                JSONObject jSONObject = (JSONObject)object;
+                String cedula=jSONObject.get("CEDULA").toString();
+                String nombre=jSONObject.get("NOMBRE").toString();
+                String apellido=jSONObject.get("APELLIDO").toString();
+                String edad=jSONObject.get("EDAD").toString();
+                modelo.addRow(new Object[]{cedula, nombre, apellido, edad});
+            }
+            jtblEstudiantes.setModel(modelo);
+            
+            
+        }catch(Exception e){
+            System.out.println("error: "+e.getMessage());
+        }
+        
+    }
+    
+    public void insertar(){
+        try {
+            String url = "http://empresa.com:8080/sistema/Controller/rest.php";
+            HttpClient cliente = HttpClientBuilder.create().build();
+            HttpPost post = new HttpPost(url);
+            
+            ArrayList<NameValuePair> parametros = new ArrayList<>();
+            parametros.add(new BasicNameValuePair("CEDULA", jtxtCedula.getText()));
+            parametros.add(new BasicNameValuePair("NOMBRE", jtxtNombre.getText()));
+            parametros.add(new BasicNameValuePair("APELLIDO", jtxtApellido.getText()));
+            parametros.add(new BasicNameValuePair("EDAD", jtxtEdad.getText()));
+            post.setEntity(new UrlEncodedFormEntity(parametros));
+            HttpResponse respuesta = cliente.execute(post);
+            //System.out.println(respuesta);
+            System.out.println("estado: "+respuesta.getStatusLine().getStatusCode());
+            mostrarDatos();
+        } catch (Exception e) {
+            System.out.println("error: "+e.getMessage());
+        }
+    }
+    
+    public void actualizar(){
+        try {
+            String apiURL = "http://empresa.com:8080/sistema/Controller/rest.php?CEDULA="+jtxtCedula.getText()
+                    +"&NOMBRE="+jtxtNombre.getText()
+                    +"&APELLIDO="+jtxtApellido.getText()
+                    +"&EDAD="+jtxtEdad.getText();
+            URL url = new URL(apiURL);
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestMethod("PUT");
+            connection.getResponseCode();
+            mostrarDatos();
+        } catch (Exception e) {
+            System.out.println("error: "+e.getMessage());
+        }
+    }
+    
+    public void cargarTextos(){
+        jtblEstudiantes.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+            @Override
+            public void valueChanged(ListSelectionEvent lse) {
+                if(jtblEstudiantes.getSelectedRow() != -1){
+                    int fila = jtblEstudiantes.getSelectedRow();
+                    jtxtCedula.setText(jtblEstudiantes.getValueAt(fila, 0).toString());
+                    jtxtNombre.setText(jtblEstudiantes.getValueAt(fila, 1).toString());
+                    jtxtApellido.setText(jtblEstudiantes.getValueAt(fila, 2).toString());
+                    jtxtEdad.setText(jtblEstudiantes.getValueAt(fila, 3).toString());
+                }
+            }            
+        });
+    }
+
+    public void eliminar(){
+        try {
+            String apiURL="http://empresa.com:8080/sistema/Controller/rest.php";
+            String urlParameters="CEDULA="+jtxtCedula.getText()+"";
+            
+            URL url = new URL(apiURL+"?"+urlParameters);
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestMethod("DELETE");
+            
+            int responseCode = connection.getResponseCode();
+            mostrarDatos();
+            
+        } catch (Exception e) {
+            System.out.println("error: "+e.getMessage());
+        }
+    }
+
+    private void jbtnInsertarActionPerformed(java.awt.event.ActionEvent evt) {                                             
+        insertar();
+    }                                            
+
+    private void jbtnEliminarActionPerformed(java.awt.event.ActionEvent evt) {                                             
+        eliminar();
+    }                                            
+
+    private void jbtnEditarActionPerformed(java.awt.event.ActionEvent evt) {                                           
+        actualizar();
+        
+    }                                          
