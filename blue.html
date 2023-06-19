@@ -1,0 +1,98 @@
+con
+<?php
+    class Connection{
+        public static function connect(){
+            define("serverName","localhost");
+            define("dbName","base");
+            define("dbUser","root");
+            define("dbPassword","");
+
+            $preferences = array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8");
+
+            try{
+                $connection = new PDO("mysql:host=".serverName."; dbname=".dbName,dbUser,dbPassword,$preferences);
+                return $connection;
+            }catch(Exception $e){
+                die("Error al Intentar Establecer Conexión la Base de Datos: " .$e->getMessage());
+            }
+        }
+    }
+?>
+
+<?php
+
+include_once('connection.php');
+
+class CRUDPerson{
+    
+    static $connectedInstance;
+
+    private static function stablishConnection(){
+        self::$connectedInstance = Connection::connect();
+    }
+
+public static function readPersons(){
+        self::stablishConnection();
+
+        $sql = "select e.* from estudiantes e, materia m where e.materiaPertenece = m.idMateria and e.nombre = ?";
+
+        $preparedStatement = self::$connectedInstance->prepare($sql);
+        if(!$preparedStatement->execute()){
+            die("Error en la operación SELECT");
+        }
+        $answer = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($answer);
+        return;
+    }
+}
+
+
+
+rest
+
+<?php
+ 
+
+    require_once('../Model/personDataAccess.php');
+
+    $serverMethod = $_SERVER['REQUEST_METHOD'];
+
+    switch($serverMethod){
+        case 'GET':
+            CRUDPerson::buscarSocorro();
+            break;
+/*
+        case 'POST':
+            CRUDPerson::insertPerson($_POST['CEDULA'], $_POST['NOMBRE'], $_POST['APELLIDO'], $_POST['EDAD']);
+            break;
+        case 'PUT':
+            CRUDPerson::updatePerson($_GET['CEDULA'], $_GET['NOMBRE'], $_GET['APELLIDO'], $_GET['EDAD']);
+            break;
+        case 'DELETE':
+            CRUDPerson::deletePerson($_GET['CEDULA']);
+            break;
+*/
+    }
+?>
+
+
+/*/////////////////////*/
+/*
+<?php
+
+    include_once('../Model/connection.php');
+
+    $connectedInstance = Connection::connect();
+
+    $newCedula = $_POST['txtCedula'];
+
+    $sql = "SELECT COUNT(CEDULA) CONTEO FROM PERSONAS WHERE CEDULA='$newCedula'";
+
+    $preparedStatement = $connectedInstance->prepare($sql);
+    if(!$preparedStatement->execute()){
+        die("Error en la operación SELECT");
+    }
+    $answer = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode($answer);
+?>
+*/
