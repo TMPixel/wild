@@ -1,0 +1,131 @@
+Para implementar un buscador por cédula utilizando Wildfly y las clases PHP proporcionadas, puedes seguir los siguientes pasos:
+
+1. Actualizar el archivo `PersonaFacadeREST.java`: Agrega un nuevo método en la clase `PersonaFacadeREST` que permita buscar personas por su cédula. Puedes llamar a este método `findByCedula`. Aquí tienes el código para implementar el método:
+
+```java
+@GET
+@Path("cedula/{cedula}")
+@Produces({MediaType.APPLICATION_JSON})
+public List<Persona> findByCedula(@PathParam("cedula") String cedula) {
+    CriteriaBuilder cb = em.getCriteriaBuilder();
+    CriteriaQuery<Persona> cq = cb.createQuery(Persona.class);
+    Root<Persona> root = cq.from(Persona.class);
+
+    cq.select(root)
+        .where(cb.equal(root.get("cedula"), cedula));
+
+    TypedQuery<Persona> query = em.createQuery(cq);
+    return query.getResultList();
+}
+```
+
+2. Crear un servicio PHP para consumir el servicio REST de Java: Puedes crear un nuevo archivo PHP que permita consumir el servicio web REST en Wildfly. Este archivo será responsable de enviar una solicitud HTTP al servicio REST de Java y recibir la respuesta con los datos de la persona buscada. Aquí tienes el código para el archivo PHP:
+
+```php
+<?php
+
+function searchPersonByCedula($cedula) {
+    $url = "http://localhost:8080/edu.mimi.ec_grupo3exp_war_soa/webresources/edu.mimi.ec.grupo3exp.persona/cedula/{$cedula}";
+    
+    // Inicializar cURL para hacer la solicitud
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    
+    // Ejecutar la solicitud y obtener la respuesta
+    $response = curl_exec($ch);
+    
+    // Verificar si hubo errores en la solicitud
+    if (curl_errno($ch)) {
+        die('Error al hacer la solicitud REST: ' . curl_error($ch));
+    }
+    
+    // Cerrar la conexión cURL
+    curl_close($ch);
+    
+    // Decodificar la respuesta JSON y retornar los datos
+    return json_decode($response, true);
+}
+
+// Obtener la cédula del parámetro de la URL
+if (isset($_GET['CEDULA'])) {
+    $cedula = $_GET['CEDULA'];
+    $person = searchPersonByCedula($cedula);
+    echo json_encode($person);
+}
+?>
+```
+
+3. Agregar el servicio PHP a tu proyecto Wildfly: Puedes colocar el archivo PHP en el directorio de tu proyecto Wildfly, junto con las otras clases PHP que ya tienes.
+
+Con estos cambios, ahora podrás realizar búsquedas por cédula utilizando el servicio web REST en Wildfly. Para hacer una búsqueda, simplemente realiza una solicitud GET a tu archivo PHP proporcionando la cédula como parámetro en la URL, y recibirás la respuesta con los datos de la persona buscada en formato JSON. Por ejemplo:
+
+```
+http://localhost/tu_proyecto/searchPerson.php?CEDULA=123456789
+```
+
+Este enlace buscará a la persona con cédula "123456789" en el servicio REST y devolverá la información correspondiente en formato JSON.Para implementar un buscador por cédula utilizando Wildfly y las clases PHP proporcionadas, puedes seguir los siguientes pasos:
+
+1. Actualizar el archivo `PersonaFacadeREST.java`: Agrega un nuevo método en la clase `PersonaFacadeREST` que permita buscar personas por su cédula. Puedes llamar a este método `findByCedula`. Aquí tienes el código para implementar el método:
+
+```java
+@GET
+@Path("cedula/{cedula}")
+@Produces({MediaType.APPLICATION_JSON})
+public List<Persona> findByCedula(@PathParam("cedula") String cedula) {
+    CriteriaBuilder cb = em.getCriteriaBuilder();
+    CriteriaQuery<Persona> cq = cb.createQuery(Persona.class);
+    Root<Persona> root = cq.from(Persona.class);
+
+    cq.select(root)
+        .where(cb.equal(root.get("cedula"), cedula));
+
+    TypedQuery<Persona> query = em.createQuery(cq);
+    return query.getResultList();
+}
+```
+
+2. Crear un servicio PHP para consumir el servicio REST de Java: Puedes crear un nuevo archivo PHP que permita consumir el servicio web REST en Wildfly. Este archivo será responsable de enviar una solicitud HTTP al servicio REST de Java y recibir la respuesta con los datos de la persona buscada. Aquí tienes el código para el archivo PHP:
+
+```php
+<?php
+
+function searchPersonByCedula($cedula) {
+    $url = "http://localhost:8080/edu.mimi.ec_grupo3exp_war_soa/webresources/edu.mimi.ec.grupo3exp.persona/cedula/{$cedula}";
+    
+    // Inicializar cURL para hacer la solicitud
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    
+    // Ejecutar la solicitud y obtener la respuesta
+    $response = curl_exec($ch);
+    
+    // Verificar si hubo errores en la solicitud
+    if (curl_errno($ch)) {
+        die('Error al hacer la solicitud REST: ' . curl_error($ch));
+    }
+    
+    // Cerrar la conexión cURL
+    curl_close($ch);
+    
+    // Decodificar la respuesta JSON y retornar los datos
+    return json_decode($response, true);
+}
+
+// Obtener la cédula del parámetro de la URL
+if (isset($_GET['CEDULA'])) {
+    $cedula = $_GET['CEDULA'];
+    $person = searchPersonByCedula($cedula);
+    echo json_encode($person);
+}
+?>
+```
+
+3. Agregar el servicio PHP a tu proyecto Wildfly: Puedes colocar el archivo PHP en el directorio de tu proyecto Wildfly, junto con las otras clases PHP que ya tienes.
+
+Con estos cambios, ahora podrás realizar búsquedas por cédula utilizando el servicio web REST en Wildfly. Para hacer una búsqueda, simplemente realiza una solicitud GET a tu archivo PHP proporcionando la cédula como parámetro en la URL, y recibirás la respuesta con los datos de la persona buscada en formato JSON. Por ejemplo:
+
+```
+http://localhost/tu_proyecto/searchPerson.php?CEDULA=123456789
+```
+
+Este enlace buscará a la persona con cédula "123456789" en el servicio REST y devolverá la información correspondiente en formato JSON.
