@@ -1,0 +1,4 @@
+edu\mimi\ec\grupo3exp\Persona.class
+edu\mimi\ec\grupo3exp\service\AbstractFacade.class
+edu\mimi\ec\grupo3exp\service\ApplicationConfig.class
+edu\mimi\ec\grupo3exp\service\PersonaFacadeREST.class
