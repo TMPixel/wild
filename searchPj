@@ -1,0 +1,97 @@
+<?php
+class connection{
+    public static function connect(){
+
+        define("serv","localhost");
+        define("db","inventario");
+        define("user","root");
+        define("password","");
+
+        $conf = array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8");
+        try{
+            $con = new PDO("mysql:host=".serv."; dbname=".db,user,password,$conf);
+            return $con;
+        }catch(Exception $e){
+            die("Error al Intentar Establecer Conexión la Base de Datos: " . $e->getMessage());
+        }
+    }
+}
+
+?>
+*****************************
+<?php
+include("connection.php");
+class crud{
+
+    public static function mostrarTabla(){
+        $conexion = connection::connect();
+        $sql = "SELECT * FROM inventario";
+        $preparedStatement = $conexion->prepare($sql);
+        if(!$preparedStatement->execute()){
+            die("Error en la operación");
+        }
+        $answer = $preparedStatement->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($answer);
+            return;
+
+    }
+
+    
+    public static function buscarProducto($nombre){
+        /* para mostrar en tabla
+        $conexion = connection::connect();
+        $sql = "SELECT id_pro_per, cant_prod FROM inventario WHERE id_pro_per = (SELECT id_pro FROM productos WHERE nom_pro ='$nombre')";
+        $pst = $conexion->prepare($sql);
+        //$pst->bindParam(':nombre', $nombre, PDO::PARAM_STR);
+
+        if (!$pst->execute()) {
+            die("Error en la operación");
+        }
+
+        $answer = $pst->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($answer);
+        return;
+        */
+        /*para mostrar en un textfield*/
+        $conexion = connection::connect();
+
+        $sql = "SELECT p.nom_pro AS nombre_producto, SUM(i.cant_prod) AS cantidad_total
+                FROM inventario i
+                JOIN productos p ON i.id_pro_per = p.id_pro
+                WHERE p.nom_pro = :nombre
+                GROUP BY p.nom_pro";
+                
+        $pst = $conexion->prepare($sql);
+        $pst->bindParam(':nombre', $nombre, PDO::PARAM_STR);
+
+        if (!$pst->execute()) {
+            die("Error en la operación");
+        }
+
+        $resultado = $pst->fetch(PDO::FETCH_ASSOC);
+        $cantidadTotal = $resultado['cantidad_total'];
+
+        echo $cantidadTotal;
+
+    }
+
+}
+
+?>
+******************
+<?php
+include_once('crud.php');
+
+$serverMethod = $_SERVER['REQUEST_METHOD'];
+
+switch ($serverMethod) {
+    case 'GET':
+        if (isset($_GET['nombre'])) {
+            crud::buscarProducto($_GET['nombre']);
+        } else {
+            crud::mostrarTabla();
+        }
+        break;
+}
+
+?>
