@@ -1,0 +1,63 @@
+.security
+
+@Configuration
+public class WebSecurityConfig {
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authManager)throws Exception{
+        return http
+        .csrf().disable()
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .httpBasic()
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .build();
+    }
+    
+    @Bean
+    UserDetailsService userDetailsService(){
+        InMemoryUserDetailsManager manager= new InMemoryUserDetailsManager();
+        manager.createUser(User.withUsername("salu3")
+        .password(passwordEncoder().encode("123"))
+        .roles()
+        .build());
+        return manager;
+    }
+      
+    @Bean
+    AuthenticationManager authManager(HttpSecurity http, PasswordEncoder passwordEncoder)throws Exception{
+        return  http.getSharedObject(AuthenticationManagerBuilder.class)
+                .userDetailsService(userDetailsService())
+                .passwordEncoder(passwordEncoder())
+                .and()
+                .build();
+    }
+    
+    @Bean
+    PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+    
+}
+
+
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+            <type>jar</type>
+        </dependency>
