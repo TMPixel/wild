@@ -1,0 +1,79 @@
+DefaultTableModel modeloTabla;
+    public Ventana() {
+        initComponents();
+        cargarTabla();
+    }
+
+    public void cargarTabla(){
+        String []titulos = {"ID Bodega", "Cantidad"};
+        modeloTabla = new DefaultTableModel(null, titulos);
+        try{ 
+            URL url = new URL("http://localhost:8080/phpPrueba/rest.php");    
+            
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestMethod("GET");
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder respuesta = new StringBuilder();
+            String linea;
+            while((linea=reader.readLine()) != null){
+                respuesta.append(linea);
+            }
+            
+            JSONParser parse = new JSONParser();
+            JSONArray jsonArray = (JSONArray)parse.parse(respuesta.toString());
+            
+            for(Object object:jsonArray){
+                JSONObject jSONObject = (JSONObject)object;
+                String idbod=jSONObject.get("id_bod_per").toString();
+                String cant=jSONObject.get("cant_prod").toString();
+                modeloTabla.addRow(new Object[]{idbod,cant});
+            }
+            jtblProductos.setModel(modeloTabla);
+            
+            
+        }catch(Exception e){
+            System.out.println("error: "+e.getMessage());
+        }
+    
+    }
+    
+    public void buscarProducto() {
+        String nombreProducto = jtxtBuscador.getText();
+        try {
+            URL url = new URL("http://localhost:8080/phpPrueba/rest.php?nombre=" + nombreProducto);
+                                
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder respuesta = new StringBuilder();
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                respuesta.append(linea);
+            }
+            
+            jtxtTotalProd.setText(respuesta.toString());
+            
+            /*
+            JSONParser parse = new JSONParser();
+            JSONArray jsonArray = (JSONArray) parse.parse(respuesta.toString());
+
+            modeloTabla.setRowCount(0);
+
+            for (Object object : jsonArray) {
+                JSONObject jSONObject = (JSONObject) object;
+                String idbod = jSONObject.get("id_bod_per").toString();
+                String cant = jSONObject.get("cant_prod").toString();
+                modeloTabla.addRow(new Object[]{idbod, cant});
+            }
+
+            jtblProductos.setModel(modeloTabla);
+            */
+        } catch (Exception e) {
+            System.out.println("error: " + e.getMessage());
+        }
+    }
+private void jbtnBuscarActionPerformed(java.awt.event.ActionEvent evt) {                                           
+        buscarProducto();
+    } 
